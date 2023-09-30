@@ -22,8 +22,8 @@ fn print_api_key(api_key: &SafeString<ApiKey>) {
 }
 
 fn main() -> Result<()> {
-    let s: SafeString<Email> = safestring::SafeString::new("foo@bar.baz");
-    let a: SafeString<ApiKey> = safestring::SafeString::new("0123456789abcdef0123456789abcdef");
+    let s: SafeString<Email> = SafeString::try_from("foo@bar.baz")?;
+    let a: SafeString<ApiKey> = SafeString::try_from("0123456789abcdef0123456789abcdef")?;
     println!("{s}");
     println!("{a}");
 
@@ -43,6 +43,11 @@ fn main() -> Result<()> {
 
     // let boom: SafeString<ApiKey> = safestring::SafeString::new("0123456789abcdef");
     // println!("{}", a == s); // also boom
+
+    let nyes: Result<SafeString<Fullname>, _> = "John Doe".try_into();
+    let nno: Result<SafeString<Fullname>, _> = "JohnNo".try_into();
+
+    println!("{nyes:?} {nno:?}");
 
     Ok(())
 }

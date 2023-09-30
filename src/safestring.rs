@@ -1,6 +1,12 @@
 use serde::{Deserialize, Serialize};
 use std::{fmt::Debug, marker::PhantomData};
 
+#[derive(Debug, thiserror::Error)]
+pub enum Error {
+    #[error("Invalid string: {0}")]
+    InvalidStringError(String),
+}
+
 pub trait Validator {
     fn valid(s: &str) -> bool;
 }
@@ -20,22 +26,18 @@ impl Validator for ApiKey {
 }
 
 pub struct SafeString<T>(String, PhantomData<T>);
-impl<T> SafeString<T>
+
+impl<T> TryFrom<&str> for SafeString<T>
 where
     T: Validator,
 {
-    pub fn try_from(s: &str) -> Option<Self> {
-        if T::valid(s) {
-            Some(Self(s.to_string(), PhantomData))
-        } else {
-            None
-        }
-    }
+    type Error = Error;
 
-    pub fn new(s: &str) -> Self {
-        match T::valid(s) {
-            true => Self(s.to_string(), PhantomData),
-            false => panic!("Invalid string"),
+    fn try_from(s: &str) -> Result<Self, Self::Error> {
+        if T::valid(s) {
+            Ok(Self(s.to_string(), PhantomData))
+        } else {
+            Err(Error::InvalidStringError("Invalid string".to_string()))
         }
     }
 }
@@ -87,8 +89,23 @@ mod test {
     use super::*;
 
     #[test]
-    fn test_safe_string() {
-        let s: SafeString<Email> = SafeString::<Email>::new("x");
-        assert_eq!(s.0, "x");
+    fn test_construct_safe_string_1() -> Result<(), Error> {
+        let s: SafeString<Email> = SafeString::try_from("x@foo.bar")?;
+        assert_eq!(s.to_string(), "x@foo.bar");
+        Ok(())
+    }
+
+    #[test]
+    fn test_construct_safe_string_2() -> Result<(), Error> {
+        let s: SafeString<Email> = "x@foo.bar".try_into()?;
+        assert_eq!(s.to_string(), "x@foo.bar");
+        Ok(())
+    }
+
+    #[test]
+    fn test_construct_safe_string_3() -> Result<(), Error> {
+        let s = SafeString::<Email>::try_from("x@foo.bar")?;
+        assert_eq!(s.to_string(), "x@foo.bar");
+        Ok(())
     }
 }
