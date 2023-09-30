@@ -3,10 +3,18 @@ use eyre::Result;
 use safestring::{ApiKey, Email, SafeString};
 use serde::{Deserialize, Serialize};
 
+struct Fullname {}
+impl safestring::Validator for Fullname {
+    fn valid(s: &str) -> bool {
+        s.split_whitespace().count() == 2
+    }
+}
+
 #[derive(Debug, Serialize, Deserialize)]
 struct User {
     email: SafeString<Email>,
     api_key: SafeString<ApiKey>,
+    fullname: SafeString<Fullname>,
 }
 
 fn main() -> Result<()> {
@@ -18,7 +26,8 @@ fn main() -> Result<()> {
     let data = r#"
         {
             "email": "foo@bar.baz",
-            "api_key": "0123456789abcdef0123456789abcdef"
+            "api_key": "0123456789abcdef0123456789abcdef",
+            "fullname": "John Doe"
         }
     "#;
 
