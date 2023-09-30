@@ -17,11 +17,18 @@ struct User {
     fullname: SafeString<Fullname>,
 }
 
+fn print_api_key(api_key: &SafeString<ApiKey>) {
+    println!("{api_key}");
+}
+
 fn main() -> Result<()> {
     let s: SafeString<Email> = safestring::SafeString::new("foo@bar.baz");
     let a: SafeString<ApiKey> = safestring::SafeString::new("0123456789abcdef0123456789abcdef");
     println!("{s}");
     println!("{a}");
+
+    print_api_key(&a);
+    // print_api_key(&s); // mismatched types
 
     let data = r#"
         {
