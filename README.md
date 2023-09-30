@@ -1,2 +1,2 @@
-# safestring
-Safe Strings in Rust, for excercise, not for any real use for now
+# strictstring
+Strict Strings in Rust, for exercise, not for any real use for now
