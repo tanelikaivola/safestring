@@ -1,4 +1,5 @@
-use std::marker::PhantomData;
+use serde::{Deserialize, Serialize};
+use std::{fmt::Debug, marker::PhantomData};
 
 pub trait Validator {
     fn valid(s: &str) -> bool;
@@ -42,6 +43,42 @@ where
 impl<T> std::fmt::Display for SafeString<T> {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         write!(f, "{}", self.0)
+    }
+}
+
+impl<T> Debug for SafeString<T> {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "{:?}", self.0)
+    }
+}
+
+impl<'de, T> Deserialize<'de> for SafeString<T>
+where
+    T: Validator,
+{
+    fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
+    where
+        D: serde::Deserializer<'de>,
+    {
+        String::deserialize(deserializer).and_then(|s| {
+            if T::valid(&s) {
+                Ok(Self(s, PhantomData))
+            } else {
+                Err(serde::de::Error::custom("Invalid string"))
+            }
+        })
+    }
+}
+
+impl<T> Serialize for SafeString<T>
+where
+    T: Validator,
+{
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: serde::Serializer,
+    {
+        self.0.serialize(serializer)
     }
 }
 
