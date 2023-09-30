@@ -1,10 +1,9 @@
-mod safestring;
 use eyre::Result;
-use safestring::{ApiKey, Email, SafeString};
 use serde::{Deserialize, Serialize};
+use strictstring::{ApiKey, Email, StrictString, Validator};
 
 struct Fullname {}
-impl safestring::Validator for Fullname {
+impl Validator for Fullname {
     fn valid(s: &str) -> bool {
         s.split_whitespace().count() == 2
     }
@@ -12,18 +11,18 @@ impl safestring::Validator for Fullname {
 
 #[derive(Debug, Serialize, Deserialize)]
 struct User {
-    email: SafeString<Email>,
-    api_key: SafeString<ApiKey>,
-    fullname: SafeString<Fullname>,
+    email: StrictString<Email>,
+    api_key: StrictString<ApiKey>,
+    fullname: StrictString<Fullname>,
 }
 
-fn print_api_key(api_key: &SafeString<ApiKey>) {
+fn print_api_key(api_key: &StrictString<ApiKey>) {
     println!("{api_key}");
 }
 
 fn main() -> Result<()> {
-    let s: SafeString<Email> = SafeString::try_from("foo@bar.baz")?;
-    let a: SafeString<ApiKey> = SafeString::try_from("0123456789abcdef0123456789abcdef")?;
+    let s: StrictString<Email> = StrictString::try_from("foo@bar.baz")?;
+    let a: StrictString<ApiKey> = StrictString::try_from("0123456789abcdef0123456789abcdef")?;
     println!("{s}");
     println!("{a}");
 
@@ -44,8 +43,8 @@ fn main() -> Result<()> {
     // let boom: SafeString<ApiKey> = safestring::SafeString::new("0123456789abcdef");
     // println!("{}", a == s); // also boom
 
-    let nyes: Result<SafeString<Fullname>, _> = "John Doe".try_into();
-    let nno: Result<SafeString<Fullname>, _> = "JohnNo".try_into();
+    let nyes: Result<StrictString<Fullname>, _> = "John Doe".try_into();
+    let nno: Result<StrictString<Fullname>, _> = "JohnNo".try_into();
 
     println!("{nyes:?} {nno:?}");
 

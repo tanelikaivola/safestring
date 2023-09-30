@@ -25,9 +25,9 @@ impl Validator for ApiKey {
     }
 }
 
-pub struct SafeString<T>(String, PhantomData<T>);
+pub struct StrictString<T>(String, PhantomData<T>);
 
-impl<T> TryFrom<&str> for SafeString<T>
+impl<T> TryFrom<&str> for StrictString<T>
 where
     T: Validator,
 {
@@ -42,19 +42,19 @@ where
     }
 }
 
-impl<T> std::fmt::Display for SafeString<T> {
+impl<T> std::fmt::Display for StrictString<T> {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         write!(f, "{}", self.0)
     }
 }
 
-impl<T> Debug for SafeString<T> {
+impl<T> Debug for StrictString<T> {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         write!(f, "{:?}", self.0)
     }
 }
 
-impl<'de, T> Deserialize<'de> for SafeString<T>
+impl<'de, T> Deserialize<'de> for StrictString<T>
 where
     T: Validator,
 {
@@ -72,7 +72,7 @@ where
     }
 }
 
-impl<T> Serialize for SafeString<T>
+impl<T> Serialize for StrictString<T>
 where
     T: Validator,
 {
@@ -90,21 +90,21 @@ mod test {
 
     #[test]
     fn test_construct_safe_string_1() -> Result<(), Error> {
-        let s: SafeString<Email> = SafeString::try_from("x@foo.bar")?;
+        let s: StrictString<Email> = StrictString::try_from("x@foo.bar")?;
         assert_eq!(s.to_string(), "x@foo.bar");
         Ok(())
     }
 
     #[test]
     fn test_construct_safe_string_2() -> Result<(), Error> {
-        let s: SafeString<Email> = "x@foo.bar".try_into()?;
+        let s: StrictString<Email> = "x@foo.bar".try_into()?;
         assert_eq!(s.to_string(), "x@foo.bar");
         Ok(())
     }
 
     #[test]
     fn test_construct_safe_string_3() -> Result<(), Error> {
-        let s = SafeString::<Email>::try_from("x@foo.bar")?;
+        let s = StrictString::<Email>::try_from("x@foo.bar")?;
         assert_eq!(s.to_string(), "x@foo.bar");
         Ok(())
     }
